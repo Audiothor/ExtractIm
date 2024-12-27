@@ -11,3 +11,35 @@ pip install -r requirements.txt
 
 4. Execute the program
 python main.py
+
+
+
+
+virtual :
+ Créer un environnement virtuel
+
+Pour créer un environnement virtuel, utilisez la commande virtualenv suivie du nom de l'environnement virtuel que vous souhaitez créer. Par exemple, pour créer un environnement virtuel nommé .venv :
+
+virtualenv .venv
+
+3. Activer l'environnement virtuel
+
+Pour activer l'environnement virtuel sur Windows, utilisez la commande suivante :
+
+.venv\Scripts\activate
+
+4. Vérifier l'activation de l'environnement virtuel
+
+Une fois l'environnement virtuel activé, vous devriez voir le nom de l'environnement virtuel dans l'invite de commande. Par exemple :
+
+(.venv) C:\path\to\your\project>
+
+Vous pouvez également vérifier la version de Python utilisée dans l'environnement virtuel en exécutant la commande suivante :
+
+python --version
+
+5. Désactiver l'environnement virtuel
+
+Pour désactiver l'environnement virtuel, utilisez la commande suivante :
+
+deactivate
