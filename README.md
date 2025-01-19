@@ -10,10 +10,24 @@ git clone https://github.com/Audiothor/ExtractIm.git
 pip install -r requirements.txt
 
 4. Execute the program
-python main.py
+python ExtractIM.py
 
+----------------------------------------------------------------------------------
+Prerequisites :
 
+STEP 1
+.venv\Scripts\activate
 
+STEP 2
+pip install PyQt6
+pip install Pillow
+
+STEP 3
+Modify the ExtractIM.py :
+     line 19
+     change C:\\Users\\comme\\Documents\\ExtractIM\\ExtractIM.ui with the .ui file is present
+
+---------------------------------------------------------------------------------  
 
 virtual :
  Créer un environnement virtuel
