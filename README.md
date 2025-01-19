@@ -1,6 +1,9 @@
 ExtractIM
 Move or copy images from a directory to store in a target like yyyy/yyyy-mm-dd name directory and permit to remove or keep it.
 
+----------------------------------------------------------------------------------
+New Install :
+
 1. Via GitHub
 git clone https://github.com/Audiothor/ExtractIm.git
 
@@ -13,7 +16,7 @@ pip install -r requirements.txt
 python ExtractIM.py
 
 ----------------------------------------------------------------------------------
-Prerequisites :
+Prerequisites (from zip file) :
 
 STEP 1
 .venv\Scripts\activate
