@@ -25,11 +25,6 @@ STEP 2
 pip install PyQt6
 pip install Pillow
 
-STEP 3
-Modify the ExtractIM.py :
-     line 19
-     change C:\\Users\\comme\\Documents\\ExtractIM\\ExtractIM.ui with the .ui file is present
-
 ---------------------------------------------------------------------------------  
 
 virtual :
