@@ -14,12 +14,21 @@ from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import QDateTime, Qt
 from PIL import Image, ImageQt
 
+# Constantes
+VERSION="ImportIM v1.6 - 26/01/2025"
+script_path = os.path.abspath(__file__)
+script_directory = os.path.dirname(script_path)
+
+default_directory_source="C:\\"
+default_directory_target="C:\\"
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('D:\\Programming\\ExtractIm\\ExtractIm.ui', self)
+        uic.loadUi(script_directory+'\\ExtractIm.ui', self)
 
-        self.setWindowTitle("ImportIM v1.5 - 17/01/2025")
+        self.setWindowTitle(VERSION)
         self.showMaximized()  # Set the window to maximized
         self.setWindowIcon(QIcon("icon.png"))
 
@@ -41,6 +50,8 @@ class MainWindow(QMainWindow):
         self.lineEditRepSource=self.findChild(QLineEdit,'lineEditRepSource')
 
         self.checkBoxCopyorMove=self.findChild(QCheckBox,'checkBoxCopyorMove')
+        self.checkBoxConfirmDelete=self.findChild(QCheckBox,'checkBoxConfirmDelete')
+        self.checkBoxDateNom=self.findChild(QCheckBox,'checkBoxDateNom')
 
         self.button_select = self.findChild(QPushButton, 'button_select')
         self.button_select.clicked.connect(self.select_directory)
@@ -91,10 +102,6 @@ class MainWindow(QMainWindow):
         self.nb_images_renommer = 0
         # Rotation
         self.rotated_image=None
-
-        # UNIQUEMENT POUR LES TESTS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        self.default_directory_source="C:/Users/Admin/Desktop/Tri"
-        self.default_directory_target="D:/Test"
 
 
     def rotation(self,angle):
@@ -172,14 +179,20 @@ class MainWindow(QMainWindow):
         chemin_source = self.get_path_cell_value()
         file_full_path_source = chemin_source + "/" + fichier_source
 
-        confirm_msg = QMessageBox()
-        confirm_msg.setIcon(QMessageBox.Icon.Warning)
-        confirm_msg.setText(f"Voulez-vous vraiment supprimer le fichier {fichier_source} ?")
-        confirm_msg.setWindowTitle("Confirmer la suppression")
-        confirm_msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        ret = confirm_msg.exec()
+        confirm=True
+        if self.checkBoxConfirmDelete.isChecked():
+            confirm_msg = QMessageBox()
+            confirm_msg.setIcon(QMessageBox.Icon.Warning)
+            confirm_msg.setText(f"Voulez-vous vraiment supprimer le fichier {fichier_source} ?")
+            confirm_msg.setWindowTitle("Confirmer la suppression")
+            confirm_msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            ret = confirm_msg.exec()
+            if ret == QMessageBox.StandardButton.Yes:
+                confirm=True
+            else:
+                confirm=False
 
-        if ret == QMessageBox.StandardButton.Yes:
+        if confirm==True:       
             print(f"Fichier {fichier_source} supprimé.")
             os.remove(file_full_path_source)  # Delete the file
 
@@ -256,21 +269,41 @@ class MainWindow(QMainWindow):
 
         fichier_source = self.get_filename_cell_value()
         chemin_source = self.get_path_cell_value()
-        file_full_path_source = chemin_source + "/" + fichier_source
+        file_full_path_source = chemin_source + "/" + fichier_source    
         file_target=os.path.basename(fichier_source)
         print("fichier actuel"+file_full_path_source)
+
         # Récupérer les informations de création du fichier
         #creation_time = os.path.getctime(file_full_path_source)
-        # Récupérer les informations de modification du fichier
-        creation_time = os.path.getmtime(file_full_path_source)
+        # Récupérer les informations de modification du fichier suivant l'option
+        if self.checkBoxDateNom.isChecked():
+            # Expression régulière pour extraire une séquence de 8 chiffres
+            pattern = r"\d{8}"
 
-        # Convertir le temps en format lisible
-        creation_date = time.localtime(creation_time)
+            # Recherche du motif dans le nom de fichier
+            match = re.search(pattern, file_target)
 
-        # Extraire l'année, le mois et le jour
-        creation_year = str(creation_date.tm_year)
-        creation_month = str(creation_date.tm_mon).zfill(2)
-        creation_day = str(creation_date.tm_mday).zfill(2)
+            if match:
+                date_str = match.group(0)
+                print(f"Chaîne de 8 chiffres extraite : {date_str}")
+
+                # Extraire l'année (YYYY), le mois (MM) et le jour (DD)
+                creation_year = date_str[:4]
+                creation_month = date_str[4:6]
+                creation_day = date_str[6:8]
+            else:
+                print("Aucune chaîne de 8 chiffres trouvée dans le nom de fichier")
+                self.show_message("WARNING !!", "Aucune chaîne de 8 chiffres trouvée dans le nom de fichier : annulation !")
+                self.start()
+        else:
+            creation_time = os.path.getmtime(file_full_path_source)
+            # Convertir le temps en format lisible
+            creation_date = time.localtime(creation_time)
+            # Extraire l'année, le mois et le jour
+            creation_year = str(creation_date.tm_year)
+            creation_month = str(creation_date.tm_mon).zfill(2)
+            creation_day = str(creation_date.tm_mday).zfill(2)
+
         target_full_path=directory_path+"/"+creation_year+"/"+creation_year+"-"+creation_month+"-"+creation_day
         print("target_full_path" + target_full_path)
         # Vérifier si le répertoire existe
@@ -404,8 +437,8 @@ class MainWindow(QMainWindow):
         self.pushButton90D.setEnabled(True)
         self.pushButtonNormal.setEnabled(True)
         self.pushButton180.setEnabled(True)
-        self.pushButtonGarder.setStyleSheet("background-color: green; color: white; font-size: 14px;")
-        self.pushButtonSupprimer.setStyleSheet("background-color: red; color: white; font-size: 14px;")
+        #self.pushButtonGarder.setStyleSheet("background-color: green; color: white; font-size: 14px;")
+        #self.pushButtonSupprimer.setStyleSheet("background-color: red; color: white; font-size: 14px;")
 
     def list_image_files(self,directory):
         # Définir la liste des extensions de fichiers image
@@ -456,7 +489,7 @@ class MainWindow(QMainWindow):
         return image_files
 
     def select_directory(self):
-        dir_name = QFileDialog.getExistingDirectory(self, "Sélectionner le répertoire source",self.default_directory_source)
+        dir_name = QFileDialog.getExistingDirectory(self, "Sélectionner le répertoire source",default_directory_source)
         if dir_name:
             self.label.setText(f"{dir_name}")
             self.analyze_directory(dir_name)
@@ -468,19 +501,33 @@ class MainWindow(QMainWindow):
 
 
     def select_directory_target(self):
-        dir_name_target = QFileDialog.getExistingDirectory(self, "Sélectionner le répertoire destination",self.default_directory_target)
+        dir_name_target = QFileDialog.getExistingDirectory(self, "Sélectionner le répertoire destination",default_directory_target)
         if dir_name_target:
             self.label_target.setText(f"{dir_name_target}")
 
     def get_filename_cell_value(self):
-        item = self.table_widget.item(0, 0)
+        # Obtenir le numéro de la ligne actuellement sélectionnée
+        selected_row = self.table_widget.currentRow()
+        if selected_row != -1:
+            print(f"Ligne sélectionnée : {selected_row}")
+        else:
+            print("Aucune ligne sélectionnée")
+
+        item = self.table_widget.item(selected_row, 0)
         if item is not None:
             return item.text()
         else:
             return None
 
     def get_path_cell_value(self):
-        item = self.table_widget.item(0, 3)
+        # Obtenir le numéro de la ligne actuellement sélectionnée
+        selected_row = self.table_widget.currentRow()
+        if selected_row != -1:
+            print(f"Ligne sélectionnée : {selected_row}")
+        else:
+            print("Aucune ligne sélectionnée")
+
+        item = self.table_widget.item(selected_row, 3)
         if item is not None:
             return item.text()
         else:
@@ -534,62 +581,64 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
 
     def display_image(self, row, column):
-        file_path = self.table_widget.item(row, 3).text()
-        file_name = self.table_widget.item(row, 0).text()
-        file_full_path=file_path+"/"+file_name
 
-        if os.path.isfile(file_full_path) and file_full_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
-            pixmap = QPixmap(file_full_path)
+        if self.table_widget.rowCount() > 1 and self.table_widget.columnCount() > 1:
+            file_path = self.table_widget.item(row, 3).text()
+            file_name = self.table_widget.item(row, 0).text()
+            file_full_path=file_path+"/"+file_name
 
-            # Get screen size
-            screen_size = QApplication.primaryScreen().size()
-            screen_width = screen_size.width()
-            screen_height = screen_size.height()
+            if os.path.isfile(file_full_path) and file_full_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+                pixmap = QPixmap(file_full_path)
 
-            # Scale pixmap to fit screen size while keeping aspect ratio
-            scaled_pixmap = pixmap.scaled(int(screen_width * 0.8), int(screen_height * 0.8),Qt.AspectRatioMode.KeepAspectRatio)
-            scaled_pixmap_preview = pixmap.scaled(900, 600, Qt.AspectRatioMode.KeepAspectRatio)
-            # Display the image in the right layout
-            self.image_label.setPixmap(scaled_pixmap_preview)
+                # Get screen size
+                screen_size = QApplication.primaryScreen().size()
+                screen_width = screen_size.width()
+                screen_height = screen_size.height()
+
+                # Scale pixmap to fit screen size while keeping aspect ratio
+                scaled_pixmap = pixmap.scaled(int(screen_width * 0.8), int(screen_height * 0.8),Qt.AspectRatioMode.KeepAspectRatio)
+                scaled_pixmap_preview = pixmap.scaled(900, 600, Qt.AspectRatioMode.KeepAspectRatio)
+                # Display the image in the right layout
+                self.image_label.setPixmap(scaled_pixmap_preview)
 
 
-            # msg_box = QMessageBox()
-            # msg_box.setIconPixmap(scaled_pixmap)
-            # msg_box.setWindowTitle("Image Preview - "+file_name)
-            # msg_box.setStandardButtons(QMessageBox.StandardButton.Cancel)
-            # msg_box.addButton(QMessageBox.StandardButton.Ok)
-            # delete_button = msg_box.addButton("Supprimer", QMessageBox.ButtonRole.ActionRole)
+                # msg_box = QMessageBox()
+                # msg_box.setIconPixmap(scaled_pixmap)
+                # msg_box.setWindowTitle("Image Preview - "+file_name)
+                # msg_box.setStandardButtons(QMessageBox.StandardButton.Cancel)
+                # msg_box.addButton(QMessageBox.StandardButton.Ok)
+                # delete_button = msg_box.addButton("Supprimer", QMessageBox.ButtonRole.ActionRole)
 
-            # def handle_delete():
-            #     print("Suppression")
-            #     os.remove(file_path)  # Delete the file
-            #     msg_box.done(0)  # Close the message box
-            #     # Refresh the table data
-            #     dir_name = os.path.dirname(file_path)
-            #     self.analyze_directory(dir_name)
+                # def handle_delete():
+                #     print("Suppression")
+                #     os.remove(file_path)  # Delete the file
+                #     msg_box.done(0)  # Close the message box
+                #     # Refresh the table data
+                #     dir_name = os.path.dirname(file_path)
+                #     self.analyze_directory(dir_name)
 
-            #delete_button.clicked.connect(handle_delete)
+                #delete_button.clicked.connect(handle_delete)
 
-            # def handle_key_press(event):
-            #     if event.key() == Qt.Key.Key_A:
-            #         confirm_msg = QMessageBox()
-            #         confirm_msg.setIcon(QMessageBox.Icon.Warning)
-            #         confirm_msg.setText(f"Voulez-vous vraiment supprimer le fichier {file_path} ?")
-            #         confirm_msg.setWindowTitle("Confirmer la suppression")
-            #         confirm_msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-            #         ret = confirm_msg.exec()
+                # def handle_key_press(event):
+                #     if event.key() == Qt.Key.Key_A:
+                #         confirm_msg = QMessageBox()
+                #         confirm_msg.setIcon(QMessageBox.Icon.Warning)
+                #         confirm_msg.setText(f"Voulez-vous vraiment supprimer le fichier {file_path} ?")
+                #         confirm_msg.setWindowTitle("Confirmer la suppression")
+                #         confirm_msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                #         ret = confirm_msg.exec()
 
-            #         if ret == QMessageBox.StandardButton.Yes:
-            #             print(f"Fichier {file_path} supprimé.")
-            #             os.remove(file_path)  # Delete the file
-            #             msg_box.done(0)  # Close the message box
-            #             # Refresh the table data
-            #             dir_name = os.path.dirname(file_path)
-            #             self.analyze_directory(dir_name)
+                #         if ret == QMessageBox.StandardButton.Yes:
+                #             print(f"Fichier {file_path} supprimé.")
+                #             os.remove(file_path)  # Delete the file
+                #             msg_box.done(0)  # Close the message box
+                #             # Refresh the table data
+                #             dir_name = os.path.dirname(file_path)
+                #             self.analyze_directory(dir_name)
 
-            # msg_box.keyPressEvent = handle_key_press
+                # msg_box.keyPressEvent = handle_key_press
 
-            # msg_box.exec()
+                # msg_box.exec()
 
     def show_message(self,titre,message):
         msg_box = QMessageBox()
