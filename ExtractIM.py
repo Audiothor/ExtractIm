@@ -15,7 +15,7 @@ from PyQt6.QtCore import QDateTime, Qt
 from PIL import Image, ImageQt
 
 # Constantes
-VERSION="ImportIM v1.6 - 26/01/2025"
+VERSION="ImportIM v1.6.1 - 27/01/2025"
 script_path = os.path.abspath(__file__)
 script_directory = os.path.dirname(script_path)
 
@@ -415,30 +415,33 @@ class MainWindow(QMainWindow):
         if not os.path.isdir(self.label_target.text()):
             self.show_message("ERREUR", "Le répertoire destination n'existe pas !")
             return
-        fichier=self.get_filename_cell_value()
-        chemin=self.get_path_cell_value()
-        file_full_path=chemin+"/"+fichier
-        if os.path.isfile(file_full_path) and file_full_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
-            pixmap = QPixmap(file_full_path)
-            scaled_pixmap_preview = pixmap.scaled(900, 600, Qt.AspectRatioMode.KeepAspectRatio)
-            # Display the image in the right layout
-            self.image_label.setPixmap(scaled_pixmap_preview)
-        self.rafraichir_nb_lignes_tableau()
+        if self.table_widget.rowCount() > 1 and self.table_widget.columnCount() > 1:
+            fichier=self.get_filename_cell_value()
+            chemin=self.get_path_cell_value()
+            file_full_path=chemin+"/"+fichier
+            if os.path.isfile(file_full_path) and file_full_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+                pixmap = QPixmap(file_full_path)
+                scaled_pixmap_preview = pixmap.scaled(900, 600, Qt.AspectRatioMode.KeepAspectRatio)
+                # Display the image in the right layout
+                self.image_label.setPixmap(scaled_pixmap_preview)
+            self.rafraichir_nb_lignes_tableau()
 
-        # Select the first row if totalfile > 0
-        if int(self.label_totalfichiers.text()) > 0:
-            self.table_widget.setCurrentCell(0, 0)
-            #self.table_widget.cellClicked.emit(0, 0)
+            # Select the first row if totalfile > 0
+            if int(self.label_totalfichiers.text()) > 0:
+                self.table_widget.setCurrentCell(0, 0)
+                #self.table_widget.cellClicked.emit(0, 0)
 
-        # Activer les boutons
-        self.pushButtonGarder.setEnabled(True)
-        self.pushButtonSupprimer.setEnabled(True)
-        self.pushButton90G.setEnabled(True)
-        self.pushButton90D.setEnabled(True)
-        self.pushButtonNormal.setEnabled(True)
-        self.pushButton180.setEnabled(True)
-        #self.pushButtonGarder.setStyleSheet("background-color: green; color: white; font-size: 14px;")
-        #self.pushButtonSupprimer.setStyleSheet("background-color: red; color: white; font-size: 14px;")
+            # Activer les boutons
+            self.pushButtonGarder.setEnabled(True)
+            self.pushButtonSupprimer.setEnabled(True)
+            self.pushButton90G.setEnabled(True)
+            self.pushButton90D.setEnabled(True)
+            self.pushButtonNormal.setEnabled(True)
+            self.pushButton180.setEnabled(True)
+            #self.pushButtonGarder.setStyleSheet("background-color: green; color: white; font-size: 14px;")
+            #self.pushButtonSupprimer.setStyleSheet("background-color: red; color: white; font-size: 14px;")
+        else:
+            return
 
     def list_image_files(self,directory):
         # Définir la liste des extensions de fichiers image
